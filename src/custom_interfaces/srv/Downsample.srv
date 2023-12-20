@@ -1,0 +1,4 @@
+int32 id
+octomap_msgs/Octomap octo_in
+---
+sensor_msgs/PointCloud2 pcl_output

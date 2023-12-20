@@ -1,0 +1,3 @@
+string map_name
+---
+octomap_msgs/Octomap octo_output

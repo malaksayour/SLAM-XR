@@ -1,0 +1,6 @@
+octomap_msgs/Octomap octofrom
+octomap_msgs/Octomap octoto
+int32 idfrom
+int32 idto
+geometry_msgs/Twist tf
+---
