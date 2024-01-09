@@ -54,7 +54,7 @@ class Merger : public rclcpp::Node
       refined_tf_topic=declare_parameter("refinedTfTopic" ,"refined_tf");
       edits_topic=declare_parameter("editTopic" ,"com/edits");
 
-      timer_ = this->create_wall_timer(9s, std::bind(&Merger::timerCallback, this));
+      timer_ = this->create_wall_timer(7s, std::bind(&Merger::timerCallback, this));
       mergedMapPub= create_publisher<octomap_msgs::msg::Octomap>(merged_topic, 10);
       initializeSubscribers();
       alignedMaps.push_back(1);
@@ -207,6 +207,9 @@ class Communicator : public rclcpp::Node
       map_names_topic=declare_parameter("mapNamesTopic" ,"com/map_names");
       map_names_request_topic=declare_parameter("mapNamesRequestTopic" ,"human/map_names");
       localize_human_topic=declare_parameter("localizeHumanTopic" ,"human/localize");
+      goal_human_topic=declare_parameter("goalHumanTopic" ,"human/goal");
+      localize_com_topic=declare_parameter("localizeComTopic" ,"com/localize");
+      goal_com_topic=declare_parameter("goalComTopic" ,"/goal_pose");
 
 
       downsamplerClient = this->create_client<custom_interfaces::srv::Downsample>("downsample");
@@ -216,6 +219,8 @@ class Communicator : public rclcpp::Node
       deleteLabelPub= create_publisher<std_msgs::msg::Int16>(semantic_delete_label_topic, 10);
       deleteInstancePub= create_publisher<custom_interfaces::msg::Instance>(human_delete_instance_topic, 10);
       mapNamesPub= create_publisher<std_msgs::msg::String>(map_names_topic, 10);
+      localizationPub= create_publisher<geometry_msgs::msg::Twist>(localize_com_topic, 10);
+      goalPub= create_publisher<geometry_msgs::msg::Twist>(goal_com_topic, 10);
 
       loaded_map_topic = oct_base_topic + "_" + std::to_string(agent_number);
       loadMapPub= create_publisher<octomap_msgs::msg::Octomap>(loaded_map_topic, 10);
@@ -249,6 +254,10 @@ class Communicator : public rclcpp::Node
     std::string map_names_request_topic;
     std::string loaded_map_topic;
     std::string localize_human_topic;
+    std::string localize_com_topic;
+    std::string goal_human_topic;
+    std::string goal_com_topic;
+
 
     sensor_msgs::msg::PointCloud2 labeledMergedPcl;
 
@@ -269,7 +278,9 @@ class Communicator : public rclcpp::Node
 
 
     rclcpp::Subscription<custom_interfaces::msg::Transformation>::SharedPtr align_map_sub;
-    rclcpp::Subscription<custom_interfaces::msg::Transformation>::SharedPtr localize_sub;
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr localize_sub;
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr goal_sub;
+
     std::map<int, rclcpp::Subscription<octomap_msgs::msg::Octomap>::SharedPtr> subDictionary;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr downsamplerPub;
     rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr semanticPub;
@@ -281,6 +292,8 @@ class Communicator : public rclcpp::Node
     rclcpp::Publisher<custom_interfaces::msg::Instance>::SharedPtr deleteInstancePub;
     rclcpp::Publisher<std_msgs::msg::String>::SharedPtr mapNamesPub;
     rclcpp::Publisher<octomap_msgs::msg::Octomap>::SharedPtr loadMapPub;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr localizationPub;
+    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr goalPub;
 
 
     rclcpp::Client<custom_interfaces::srv::Align>::SharedPtr alignClient;
@@ -498,12 +511,21 @@ class Communicator : public rclcpp::Node
 
       //create a subscriber for localization
       auto callback_localize =
-      [this](const custom_interfaces::msg::Transformation::SharedPtr msg) -> void
+      [this](const geometry_msgs::msg::Twist::SharedPtr msg) -> void
       {
-
+        localizationPub->publish(*msg);
       };
-      localize_sub=create_subscription<custom_interfaces::msg::Transformation>(
+      localize_sub=create_subscription<geometry_msgs::msg::Twist>(
       localize_human_topic, rclcpp::QoS(rclcpp::KeepLast(10)).reliable(), callback_localize);
+
+      //create a subscriber for goal navigation
+      auto callback_goal =
+      [this](const geometry_msgs::msg::Twist::SharedPtr msg) -> void
+      {
+        goalPub->publish(*msg);
+      };
+      goal_sub=create_subscription<geometry_msgs::msg::Twist>(
+      goal_human_topic, rclcpp::QoS(rclcpp::KeepLast(10)).reliable(), callback_goal);
     }
 };
 
