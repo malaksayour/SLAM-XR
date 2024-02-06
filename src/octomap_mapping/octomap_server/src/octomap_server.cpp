@@ -294,9 +294,9 @@ OctomapServer::OctomapServer(const rclcpp::NodeOptions & node_options)
   }
   auto qos = latched_topics_ ? rclcpp::QoS{1}.transient_local() : rclcpp::QoS{1};
   marker_pub_ = create_publisher<MarkerArray>("occupied_cells_vis_array", qos);
-  binary_map_pub_ = create_publisher<Octomap>("octomap_binary_holo", qos);
-  binary_map_pub_ = create_publisher<Octomap>("octomap_binary", qos);
-  binary_map_pub_ = create_publisher<Octomap>("octomap_binary_holo", qos);
+  binary_map_pub_ = create_publisher<Octomap>("octo_2", qos);
+  // binary_map_pub_ = create_publisher<Octomap>("octomap_binary", qos);
+  // binary_map_pub_ = create_publisher<Octomap>("octomap_binary_holo", qos);
   full_map_pub_ = create_publisher<Octomap>("octomap_full_holo", qos);
   point_cloud_pub_ = create_publisher<PointCloud2>("octomap_point_cloud_centers", qos);
   map_pub_ = create_publisher<OccupancyGrid>("projected_map", qos.keep_last(5));
