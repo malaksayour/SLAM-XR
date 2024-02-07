@@ -1,0 +1,50 @@
+scan_matcher:
+  ros__parameters:
+    global_frame_id: "map"
+    robot_frame_id: "base_link"
+    registration_method: "NDT"
+    odom_frame_id: "odom"
+
+    ndt_resolution: 2.0 #0.5 #A higher resolution means that the scan system can capture smaller details and finer features of the object, resulting in a more detailed representation of its geometry.
+    ndt_num_threads: 2
+    gicp_corr_dist_threshold: 5.0
+    trans_for_mapupdate: 2.0 #1.0 #affecting when the first map is being published // whenever the robot moves hal2ad we we save a pose 
+                              #also affecting the resolution of modified_path.
+    vg_size_for_input: 0.5 #0.2
+    vg_size_for_map: 0.1 #0.05
+    use_min_max_filter: true
+    scan_min_range: 0.1 #0.05
+    scan_max_range: 100.0
+    scan_period: 0.1
+    map_publish_period: 3.0 #publication rate if map should be published. resulting in more /map published 
+    num_targeted_cloud: 20
+    #initialse pose of robot in map 
+    set_initial_pose: true
+    initial_pose_x: 0.0
+    initial_pose_y: 0.0
+    initial_pose_z: 0.0
+    initial_pose_qx: 0.0
+    initial_pose_qy: 0.0
+    initial_pose_qz: 0.0
+    initial_pose_qw: 1.0
+    use_imu: false
+    use_odom: false
+    debug_flag: false #true
+    use_sim_time: false
+
+graph_based_slam:
+    ros__parameters:
+      registration_method: "NDT"
+      ndt_resolution: 1.0
+      ndt_num_threads: 2
+      voxel_leaf_size: 0.1
+      loop_detection_period: 1000 #2000 # when to check for loops
+      threshold_loop_closure_score: 1.0 #1.0 #is it worth it to publish ?
+      distance_loop_closure: 10.0 #10.0 #10 drive 20m min before revisiting candidate for loop closure 
+      range_of_searching_loop_closure: 20.0 #30.0 #100
+      search_submap_num: 2
+      num_adjacent_pose_cnstraints: 3 #2
+      use_save_map_in_loop: true
+      debug_flag: true
+      use_sim_time: false
+
