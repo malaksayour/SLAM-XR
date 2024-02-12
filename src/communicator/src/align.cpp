@@ -310,7 +310,7 @@ void align(const std::shared_ptr<custom_interfaces::srv::Align::Request> request
 
     //get the icp transformation
     Eigen::Matrix4f init_tf= poseToTransformationMatrix(request->tf);
-    Eigen::Matrix4f new_transform = getICPTransformation(cloudFrom, cloudTo, init_tf,0.05);
+    Eigen::Matrix4f new_transform = getICPTransformation(cloudTo,cloudFrom, init_tf,0.05);
 
     geometry_msgs::msg::Twist refinedtf=transformationMatrixToPose(new_transform);
     custom_interfaces::msg::Transformation output_msg;
