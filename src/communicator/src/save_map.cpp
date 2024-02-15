@@ -14,11 +14,11 @@ void saveMap(const std::shared_ptr<custom_interfaces::srv::Savemap::Request> req
 
     // Save the PCL point cloud to a PCD file
     pcl::PCDWriter writer;
-    std::string pcl_file_name= "/home/user/IROS/maps/pcl_maps/"+request->file_name +".pcd";
+    std::string pcl_file_name= "/home/user/SLAM-XR/maps/pcl_maps/"+request->file_name +".pcd";
 
     writer.write(pcl_file_name, pcl_cloud);
 
-    std::string octo_file_name= "/home/user/IROS/maps/octo_maps/"+request->file_name+".bt";
+    std::string octo_file_name= "/home/user/SLAM-XR/maps/octo_maps/"+request->file_name+".bt";
     octomap::OcTree *tree=(octomap::OcTree*)octomap_msgs::binaryMsgToMap(request->final_octomap);
 
     std::ofstream file(octo_file_name, std::ios_base::out | std::ios_base::binary);

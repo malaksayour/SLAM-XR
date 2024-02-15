@@ -201,8 +201,10 @@ class Communicator : public rclcpp::Node
       semantic_topic_pub=declare_parameter("semanticTopicPub" ,"com/semantic_pcl");
       save_map_topic=declare_parameter("saveMapTopic" ,"human/save_map");
       human_delete_label_topic=declare_parameter("humanDeleteLabel" ,"human/delete_label");
+      human_delete_instance_topic=declare_parameter("humanDeleteLabel" ,"human/delete_instance");
+
       semantic_delete_label_topic=declare_parameter("semanticDeleteLabel" ,"com/delete_label");
-      human_delete_instance_topic=declare_parameter("deleteInstance" ,"com/delete_instance");
+      semantic_delete_instance_topic=declare_parameter("deleteInstance" ,"com/delete_instance");
       load_map_topic=declare_parameter("loadMapRequest" ,"human/load_map");
       map_names_topic=declare_parameter("mapNamesTopic" ,"com/map_names");
       map_names_request_topic=declare_parameter("mapNamesRequestTopic" ,"human/map_names");
@@ -217,7 +219,7 @@ class Communicator : public rclcpp::Node
       labelPub= create_publisher<sensor_msgs::msg::PointCloud2>(human_label_pub_topic, 10);
       semanticPub= create_publisher<sensor_msgs::msg::PointCloud2>(semantic_topic_pub, 10);
       deleteLabelPub= create_publisher<std_msgs::msg::Int16>(semantic_delete_label_topic, 10);
-      deleteInstancePub= create_publisher<custom_interfaces::msg::Instance>(human_delete_instance_topic, 10);
+      deleteInstancePub= create_publisher<custom_interfaces::msg::Instance>(semantic_delete_instance_topic, 10);
       mapNamesPub= create_publisher<std_msgs::msg::String>(map_names_topic, 10);
       localizationPub= create_publisher<geometry_msgs::msg::Twist>(localize_com_topic, 10);
       goalPub= create_publisher<geometry_msgs::msg::Twist>(goal_com_topic, 10);
@@ -257,6 +259,7 @@ class Communicator : public rclcpp::Node
     std::string localize_com_topic;
     std::string goal_human_topic;
     std::string goal_com_topic;
+    std::string semantic_delete_instance_topic;
 
 
     sensor_msgs::msg::PointCloud2 labeledMergedPcl;
