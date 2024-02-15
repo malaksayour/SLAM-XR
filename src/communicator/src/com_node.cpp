@@ -201,7 +201,7 @@ class Communicator : public rclcpp::Node
       semantic_topic_pub=declare_parameter("semanticTopicPub" ,"com/semantic_pcl");
       save_map_topic=declare_parameter("saveMapTopic" ,"human/save_map");
       human_delete_label_topic=declare_parameter("humanDeleteLabel" ,"human/delete_label");
-      human_delete_instance_topic=declare_parameter("humanDeleteLabel" ,"human/delete_instance");
+      human_delete_instance_topic=declare_parameter("humanDeleteInstance" ,"human/delete_instance");
 
       semantic_delete_label_topic=declare_parameter("semanticDeleteLabel" ,"com/delete_label");
       semantic_delete_instance_topic=declare_parameter("deleteInstance" ,"com/delete_instance");
