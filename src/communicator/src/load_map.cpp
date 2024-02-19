@@ -35,7 +35,7 @@ void getMaps(const std::shared_ptr<custom_interfaces::srv::Mapnames::Request> re
 void loadMaps(const std::shared_ptr<custom_interfaces::srv::Loadmap::Request> request,
           std::shared_ptr<custom_interfaces::srv::Loadmap::Response> response)
 {
-    std::string path="/home/user/SLAM-XR/maps/octo_maps/"+request->map_name;
+    std::string path="/home/user/SLAM-XR/maps/octo_maps/"+request->map_name+".bt";
     octomap::OcTree octree(mapResolution);
     octree.readBinary(path);
 

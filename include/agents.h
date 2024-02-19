@@ -19,7 +19,7 @@
 int agent_number=4;
 std::mutex mtx_;
 //std::map<int, octomap_msgs::msg::Octomap> octomapDictionary;
-std::map<int, double> filterDictionary={{1,0.5},{2,0.2},{3,0.5}};
+std::map<int, double> filterDictionary={{1,0.5},{2,0.2},{3,0.5},{4,0.5},{5,0.5},{6,0.5},{7,0.5}};
 std::string offline_map_path="";
 int offline_map_id=4;
 //std::map<int, Eigen::Matrix4f> tfDictionary;
