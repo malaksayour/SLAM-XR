@@ -38,106 +38,106 @@ bool pointInBBox(pcl::PointXYZ& point,
          (point.z < bboxMax.z && point.z > bboxMin.z);
 }
 
-Eigen::Matrix4f getICPTransformation2(pcl::PointCloud<pcl::PointXYZ>& cloud1,pcl::PointCloud<pcl::PointXYZ>& cloud2, Eigen::Matrix4f& tf) {
+// Eigen::Matrix4f getICPTransformation2(pcl::PointCloud<pcl::PointXYZ>& cloud1,pcl::PointCloud<pcl::PointXYZ>& cloud2, Eigen::Matrix4f& tf) {
 
 
-    // apply the initial transformation to cloudFrom
-    pcl::transformPointCloud(cloud1, cloud1, tf);
+//     // apply the initial transformation to cloudFrom
+//     pcl::transformPointCloud(cloud1, cloud1, tf);
 
 
-    // get the bounding region of cloud1 to extract the points from cloud2 contained in the region
-    pcl::PointXYZ minCloud1; pcl::PointXYZ maxCloud1;
-    pcl::getMinMax3D(cloud1, minCloud1, maxCloud1);
+//     // get the bounding region of cloud1 to extract the points from cloud2 contained in the region
+//     pcl::PointXYZ minCloud1; pcl::PointXYZ maxCloud1;
+//     pcl::getMinMax3D(cloud1, minCloud1, maxCloud1);
 
-    //Aplly the transformation error threshold
-    minCloud1 = pcl::PointXYZ(
-        minCloud1.x - initTransMaxError,
-        minCloud1.y - initTransMaxError,
-        minCloud1.z - initTransMaxError
-        );
-    maxCloud1 = pcl::PointXYZ(
-        maxCloud1.x + initTransMaxError,
-        maxCloud1.y + initTransMaxError,
-        maxCloud1.z + initTransMaxError
-        );
+//     //Aplly the transformation error threshold
+//     minCloud1 = pcl::PointXYZ(
+//         minCloud1.x - initTransMaxError,
+//         minCloud1.y - initTransMaxError,
+//         minCloud1.z - initTransMaxError
+//         );
+//     maxCloud1 = pcl::PointXYZ(
+//         maxCloud1.x + initTransMaxError,
+//         maxCloud1.y + initTransMaxError,
+//         maxCloud1.z + initTransMaxError
+//         );
 
-    // filter out the points in cloud2 that are not in cloud1’s range
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2filtered(new pcl::PointCloud<pcl::PointXYZ>);
-    for (pcl::PointCloud<pcl::PointXYZ>::iterator it = cloud2.begin();it != cloud2.end(); it++) {
-      if (pointInBBox(*it, minCloud1, maxCloud1)) {
-        cloud2filtered->push_back(*it);
-      }
-    }
+//     // filter out the points in cloud2 that are not in cloud1’s range
+//     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud2filtered(new pcl::PointCloud<pcl::PointXYZ>);
+//     for (pcl::PointCloud<pcl::PointXYZ>::iterator it = cloud2.begin();it != cloud2.end(); it++) {
+//       if (pointInBBox(*it, minCloud1, maxCloud1)) {
+//         cloud2filtered->push_back(*it);
+//       }
+//     }
 
-    // filter out the points in cloud1 that are not in cloud2’s range
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1filtered(new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::PointXYZ minCloud2filtered; pcl::PointXYZ maxCloud2filtered;
-    pcl::getMinMax3D(*cloud2filtered, minCloud2filtered, maxCloud2filtered);
+//     // filter out the points in cloud1 that are not in cloud2’s range
+//     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1filtered(new pcl::PointCloud<pcl::PointXYZ>);
+//     pcl::PointXYZ minCloud2filtered; pcl::PointXYZ maxCloud2filtered;
+//     pcl::getMinMax3D(*cloud2filtered, minCloud2filtered, maxCloud2filtered);
 
-    minCloud2filtered = pcl::PointXYZ(
-        minCloud2filtered.x - initTransMaxError,
-        minCloud2filtered.y - initTransMaxError,
-        minCloud2filtered.z - initTransMaxError
-        );
+//     minCloud2filtered = pcl::PointXYZ(
+//         minCloud2filtered.x - initTransMaxError,
+//         minCloud2filtered.y - initTransMaxError,
+//         minCloud2filtered.z - initTransMaxError
+//         );
 
-    maxCloud2filtered = pcl::PointXYZ(
-        maxCloud2filtered.x + initTransMaxError,
-        maxCloud2filtered.y + initTransMaxError,
-        maxCloud2filtered.z + initTransMaxError
-        );
+//     maxCloud2filtered = pcl::PointXYZ(
+//         maxCloud2filtered.x + initTransMaxError,
+//         maxCloud2filtered.y + initTransMaxError,
+//         maxCloud2filtered.z + initTransMaxError
+//         );
 
-    for (pcl::PointCloud<pcl::PointXYZ>::iterator it = cloud1.begin();it != cloud1.end(); it++) {
-      if (pointInBBox(*it, minCloud2filtered, maxCloud2filtered)) {
-        cloud1filtered->push_back(*it);
-      }
-    }
+//     for (pcl::PointCloud<pcl::PointXYZ>::iterator it = cloud1.begin();it != cloud1.end(); it++) {
+//       if (pointInBBox(*it, minCloud2filtered, maxCloud2filtered)) {
+//         cloud1filtered->push_back(*it);
+//       }
+//     }
 
-    // Downsample for consistency and speed
-    PointCloud::Ptr src(new PointCloud);
-    PointCloud::Ptr tgt(new PointCloud);
-    pcl::VoxelGrid<PointT> grid;
-    grid.setLeafSize(downsampleRate * mapResolution, downsampleRate * mapResolution, downsampleRate * mapResolution);
-    grid.setInputCloud(cloud1filtered);
+//     // Downsample for consistency and speed
+//     PointCloud::Ptr src(new PointCloud);
+//     PointCloud::Ptr tgt(new PointCloud);
+//     pcl::VoxelGrid<PointT> grid;
+//     grid.setLeafSize(downsampleRate * mapResolution, downsampleRate * mapResolution, downsampleRate * mapResolution);
+//     grid.setInputCloud(cloud1filtered);
 
-    grid.filter(*src);
-    grid.setInputCloud(cloud2filtered);
+//     grid.filter(*src);
+//     grid.setInputCloud(cloud2filtered);
 
-    grid.filter(*tgt);
+//     grid.filter(*tgt);
 
-    // Align
-    pcl::IterativeClosestPointNonLinear<PointT, PointT> icp;
-    //termination condition
-    icp.setTransformationEpsilon(mapResolution / epsilonFactor);
-    icp.setMaxCorrespondenceDistance(initTransMaxError);
+//     // Align
+//     pcl::IterativeClosestPointNonLinear<PointT, PointT> icp;
+//     //termination condition
+//     icp.setTransformationEpsilon(mapResolution / epsilonFactor);
+//     icp.setMaxCorrespondenceDistance(initTransMaxError);
 
-    Eigen::Matrix4f Ti = Eigen::Matrix4f::Identity();
-    PointCloud::Ptr alignedCloud;
+//     Eigen::Matrix4f Ti = Eigen::Matrix4f::Identity();
+//     PointCloud::Ptr alignedCloud;
 
-    icp.setInputSource(src);
-    icp.setInputTarget(tgt);
-    alignedCloud=src;
-    // align the cloud
-    icp.setMaximumIterations(maxIterations);
-    for (int i=0; i < 500; ++i) {
-      src = alignedCloud;
+//     icp.setInputSource(src);
+//     icp.setInputTarget(tgt);
+//     alignedCloud=src;
+//     // align the cloud
+//     icp.setMaximumIterations(maxIterations);
+//     for (int i=0; i < 500; ++i) {
+//       src = alignedCloud;
 
-      // Estimate
-      icp.setInputSource(src);
-      icp.align(*alignedCloud);
+//       // Estimate
+//       icp.setInputSource(src);
+//       icp.align(*alignedCloud);
 
-      // accumulate transformation between each Iteration
-      Ti = icp.getFinalTransformation() * Ti;
+//       // accumulate transformation between each Iteration
+//       Ti = icp.getFinalTransformation() * Ti;
 
-      //refine ur parameters
-      // icp.setMaxCorrespondenceDistance(initTransMaxError/2);
+//       //refine ur parameters
+//       // icp.setMaxCorrespondenceDistance(initTransMaxError/2);
 
-    }
+//     }
 
-    //save the resultant tf
-    Ti =Ti.inverse().eval();
-    return Ti*tf;
+//     //save the resultant tf
+//     Ti =Ti.inverse().eval();
+//     return Ti*tf;
 
-}
+// }
 
 Eigen::Matrix4f getICPTransformation(
     pcl::PointCloud<pcl::PointXYZ>& cloud1,
@@ -192,7 +192,6 @@ Eigen::Matrix4f getICPTransformation(
       cloud1filtered->push_back(*it);
     }
   }
-
   // Downsample for consistency and speed
   PointCloud::Ptr src(new PointCloud);
   PointCloud::Ptr tgt(new PointCloud);
