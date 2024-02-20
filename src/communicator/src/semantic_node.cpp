@@ -69,12 +69,10 @@ class SemanticMap : public rclcpp::Node
       [this](const typename octomap_msgs::msg::Octomap::SharedPtr msg) -> void
       {
         std::lock_guard<std::mutex> lock(mtx_);
-        mergedTree=(octomap::OcTree*)octomap_msgs::binaryMsgToMap(*msg);
         //republish only if changes in merged tree were observed.   
 
-        semanticMapPclPub->publish(generate_semantic_pcl(mergedTree,labeledPcl));
+        semanticMapPclPub->publish(generate_semantic_pcl((octomap::OcTree*)octomap_msgs::binaryMsgToMap(*msg),labeledPcl));
         std::cout <<"done" << std::endl;
-        delete mergedTree;
 
       };
       mergedMapSub=create_subscription<octomap_msgs::msg::Octomap>(
