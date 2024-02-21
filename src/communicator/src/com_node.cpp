@@ -115,7 +115,7 @@ class Merger : public rclcpp::Node
               mergedWeights->setNodeValue(nodeKey, agentWeights[submapIndex]);               
             }
             else{
-              if (nodeIn1->getValue()==1000 or nodeIn1->getValue()==-1000 ) continue;
+              if (nodeIn1->getValue()==100 or nodeIn1->getValue()==-100 ) continue;
               octomap::OcTreeNode *weightNode = mergedWeights->search(nodeKey);
               float accWeight=weightNode->getLogOdds();
               float val=(accWeight*nodeIn1->getLogOdds()+agentWeights[submapIndex]*it->getLogOdds())/
@@ -163,18 +163,20 @@ class Merger : public rclcpp::Node
       [this](const typename std_msgs::msg::Bool::SharedPtr msg) -> void
       { //first check if it was aligned before
       if (msg->data){
-        PointCloudLabeled::Ptr addCloud(new PointCloudLabeled);
+        
+
+        pcl::PointCloud<PointT>::Ptr addCloud(new pcl::PointCloud<PointT>);
         pcl::moveFromROSMsg(add_pcl,*addCloud);
-        PointCloudLabeled::Ptr deleteCloud(new PointCloudLabeled);
+        pcl::PointCloud<PointT>::Ptr deleteCloud(new pcl::PointCloud<PointT>);
         pcl::moveFromROSMsg(delete_pcl,*deleteCloud);
         std::lock_guard<std::mutex> lock(mtx_);
         for (std::size_t i = 0; i < addCloud->size(); ++i) {
-          PointL point=addCloud->points[i];
-          mergedTree->setNodeValue(point.x, point.y, point.z, 1000);
+          PointT point=addCloud->points[i];
+          mergedTree->setNodeValue(point.x, point.y, point.z, 100);
         }
         for (std::size_t i = 0; i < deleteCloud->size(); ++i) {
-          PointL point=deleteCloud->points[i];
-          mergedTree->setNodeValue(point.x, point.y, point.z, -1000);
+          PointT point=deleteCloud->points[i];
+          mergedTree->setNodeValue(point.x, point.y, point.z, -100);
         }
         
       }
