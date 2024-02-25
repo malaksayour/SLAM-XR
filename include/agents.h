@@ -27,7 +27,7 @@ int offline_map_id=4;
 //sensor_msgs::msg::PointCloud2 add_pcl;
 //sensor_msgs::msg::PointCloud2 delete_pcl;
 float mapResolution=0.05;
-std::vector<float> agentWeights={1.5, 2, 3,1,1,1,1};
+std::vector<float> agentWeights={1, 1, 2,1,1,1,1};
 
 
 //wa2tiye

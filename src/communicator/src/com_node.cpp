@@ -72,8 +72,10 @@ class Merger : public rclcpp::Node
     rclcpp::TimerBase::SharedPtr timer_;
     rclcpp::Publisher<octomap_msgs::msg::Octomap>::SharedPtr mergedMapPub;
     std::vector<int> alignedMaps;
-    octomap::OcTree *mergedTree=new octomap::OcTree(mapResolution); 
-    octomap::OcTree *mergedWeights=new octomap::OcTree(mapResolution); 
+    std::unique_ptr<octomap::OcTree> mergedTree = std::make_unique<octomap::OcTree>(mapResolution);
+    std::unique_ptr<octomap::OcTree> mergedWeights = std::make_unique<octomap::OcTree>(mapResolution);
+    std::unique_ptr<octomap::OcTree> agentsInc = std::make_unique<octomap::OcTree>(mapResolution);
+
     std::map<int, Eigen::Matrix4f> tfRefinedDictionary;
 
 
@@ -112,18 +114,18 @@ class Merger : public rclcpp::Node
             if (nodeIn1 == NULL){
               mergedTree->setNodeValue(nodeKey, it->getLogOdds());
               //populate the weight map
-              mergedWeights->setNodeValue(nodeKey, agentWeights[submapIndex]);               
+              mergedWeights->setNodeValue(nodeKey, agentWeights[submapIndex]);   
             }
             else{
               if (nodeIn1->getValue()==100 or nodeIn1->getValue()==-100 ) continue;
               octomap::OcTreeNode *weightNode = mergedWeights->search(nodeKey);
-              float accWeight=weightNode->getLogOdds();
-              float val=(accWeight*nodeIn1->getLogOdds()+agentWeights[submapIndex]*it->getLogOdds())/
-              (accWeight+agentWeights[submapIndex]);
+              float accWeight=weightNode->getLogOdds()+agentWeights[submapIndex];
+              float val=(weightNode->getLogOdds()*nodeIn1->getLogOdds()+agentWeights[submapIndex]*it->getLogOdds())/
+              (weightNode->getLogOdds()+agentWeights[submapIndex]);
               //update the merged map
-              it->setLogOdds(val);
+              mergedTree->setNodeValue(nodeKey, val);
               //update the weight map
-              weightNode->setLogOdds(val);
+              weightNode->setLogOdds(accWeight);
             }
           }
           //update the submap merge counter

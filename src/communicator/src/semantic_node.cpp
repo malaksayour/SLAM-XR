@@ -11,6 +11,10 @@ using namespace std::chrono_literals;
 typedef pcl::PointXYZRGB PointL;
 typedef pcl::PointCloud<PointL> PointCloudLabeled;
 
+typedef pcl::PointXYZ PointT;
+typedef pcl::PointCloud<PointT> PointCloud;
+
+
 
 
 class SemanticMap : public rclcpp::Node
@@ -76,7 +80,7 @@ class SemanticMap : public rclcpp::Node
 
       };
       mergedMapSub=create_subscription<octomap_msgs::msg::Octomap>(
-      merged_octomap_topic, rclcpp::QoS(rclcpp::KeepLast(10)).reliable(), callback_merged);
+      merged_octomap_topic, rclcpp::QoS(rclcpp::KeepLast(1)).reliable(), callback_merged);
 
       //create a callback for the human labels
       auto callback_human_label =
@@ -94,6 +98,7 @@ class SemanticMap : public rclcpp::Node
           //std::cout <<i << std::endl;
           labeledPcl->push_back(inputCloud->points[i]);
         }
+        std::cout <<"labeled" << std::endl;
 
 
       };
@@ -104,13 +109,20 @@ class SemanticMap : public rclcpp::Node
       auto callback_delete_label =
       [this](const typename std_msgs::msg::Int16::SharedPtr msg) -> void
       {
-        PointCloudLabeled todelete;
+        PointCloud todelete;
         //get all points belonging to a certain label
         for (const auto& pclPoint : labeledPcl->points) {
-          if (pclPoint.g==msg->data) todelete.push_back(pclPoint);
+          if (pclPoint.g==msg->data) {
+            PointT point;
+            point.x=pclPoint.x;
+            point.y=pclPoint.y;
+            point.z=pclPoint.z;
+            todelete.push_back(point);
+          }
         }
         // publish the resultant points to the delete callback.
-        sensor_msgs::msg::PointCloud2 delete_msg=labeledToPcl2(todelete);
+        sensor_msgs::msg::PointCloud2 delete_msg;
+        pcl::toROSMsg(todelete,delete_msg);
         deletePub->publish(delete_msg);
 
       };

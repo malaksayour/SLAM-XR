@@ -163,10 +163,11 @@ class NavigationNode : public rclcpp::Node
         }
         // call post-traversal hook:
         handlePostNodeTraversal();
+        delete mergedTree;
 
       };
       mergedMapSub=create_subscription<octomap_msgs::msg::Octomap>(
-      merged_octomap_topic, rclcpp::QoS(rclcpp::KeepLast(10)).reliable(), callback_merged,options);
+      merged_octomap_topic, rclcpp::QoS(rclcpp::KeepLast(1)).reliable(), callback_merged,options);
 
       //tf subscriber. receives the refined transformaton form the align srv and stores in tfRefinedDictionary
       auto callback_tf =
@@ -348,12 +349,6 @@ class NavigationNode : public rclcpp::Node
 
         MapMetaData old_map_info = gridmap_.info;
               double res_=mergedTree->getResolution();
-
-
-
-
-
-
 
         // init projected 2D map:
         gridmap_.header.frame_id = "map";
