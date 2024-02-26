@@ -183,7 +183,7 @@ class Merger : public rclcpp::Node
         
       }
       };
-      editsSub=create_subscription<custom_interfaces::msg::Transformation>(
+      editsSub=create_subscription<std_msgs::msg::Bool>(
       edits_topic, rclcpp::QoS(rclcpp::KeepLast(10)).reliable(), callback_edits);
     }
 };
