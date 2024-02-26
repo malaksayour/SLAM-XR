@@ -216,7 +216,7 @@ class Communicator : public rclcpp::Node
       goal_human_topic=declare_parameter("goalHumanTopic" ,"human/goal");
       localize_com_topic=declare_parameter("localizeComTopic" ,"com/localize");
       goal_com_topic=declare_parameter("goalComTopic" ,"/goal_pose");
-
+      edits_trigger_topic=declare_parameter("EditsTrigger" ,"com/edits");
 
       downsamplerClient = this->create_client<custom_interfaces::srv::Downsample>("downsample");
       downsamplerPub= create_publisher<sensor_msgs::msg::PointCloud2>(downsampled_topic, 10);
@@ -227,6 +227,7 @@ class Communicator : public rclcpp::Node
       mapNamesPub= create_publisher<std_msgs::msg::String>(map_names_topic, 10);
       localizationPub= create_publisher<geometry_msgs::msg::Twist>(localize_com_topic, 10);
       goalPub= create_publisher<geometry_msgs::msg::Twist>(goal_com_topic, 10);
+      editPub= create_publisher<std_msgs::msg::Bool>(edits_trigger_topic, 5);
 
       loaded_map_topic = oct_base_topic + "_" + std::to_string(agent_number);
       loadMapPub= create_publisher<octomap_msgs::msg::Octomap>(loaded_map_topic, 10);
@@ -264,6 +265,7 @@ class Communicator : public rclcpp::Node
     std::string goal_human_topic;
     std::string goal_com_topic;
     std::string semantic_delete_instance_topic;
+    std::string edits_trigger_topic;
 
 
     sensor_msgs::msg::PointCloud2 labeledMergedPcl;
@@ -301,7 +303,7 @@ class Communicator : public rclcpp::Node
     rclcpp::Publisher<octomap_msgs::msg::Octomap>::SharedPtr loadMapPub;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr localizationPub;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr goalPub;
-
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr editPub;
 
     rclcpp::Client<custom_interfaces::srv::Align>::SharedPtr alignClient;
     rclcpp::Client<custom_interfaces::srv::Downsample>::SharedPtr downsamplerClient;
@@ -333,6 +335,8 @@ class Communicator : public rclcpp::Node
       {
         std::lock_guard<std::mutex> lock(mtx_);
         add_pcl = *msg;
+        std_msgs::msg::Bool trigger; trigger.data=true;
+        editPub->publish(trigger);
       };
       add_sub=create_subscription<sensor_msgs::msg::PointCloud2>(
       add_base_topic, rclcpp::QoS(rclcpp::KeepLast(10)).reliable(), callback_add);
@@ -343,6 +347,8 @@ class Communicator : public rclcpp::Node
       {
         std::lock_guard<std::mutex> lock(mtx_);
         delete_pcl = *msg;
+        std_msgs::msg::Bool trigger; trigger.data=true;
+        editPub->publish(trigger);
       };
       delete_sub=create_subscription<sensor_msgs::msg::PointCloud2>(
       delete_base_topic, rclcpp::QoS(rclcpp::KeepLast(10)).reliable(), callback_delete);

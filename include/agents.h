@@ -29,7 +29,6 @@ int offline_map_id=4;
 float mapResolution=0.05;
 std::vector<float> agentWeights={1, 1, 2,1,1,1,1};
 
-
 //wa2tiye
 int octo_type=0;
 
