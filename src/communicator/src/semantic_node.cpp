@@ -133,13 +133,20 @@ class SemanticMap : public rclcpp::Node
       auto callback_delete_instance =
       [this](const typename custom_interfaces::msg::Instance::SharedPtr msg) -> void
       {
-        PointCloudLabeled todelete;
+        PointCloud todelete;
         //get all points belonging to a certain label
         for (const auto& pclPoint : labeledPcl->points) {
-          if (pclPoint.g==msg->label and pclPoint.b==msg->instance) todelete.push_back(pclPoint);
+          if (pclPoint.g==msg->label and pclPoint.b==msg->instance) {
+            PointT point;
+            point.x=pclPoint.x;
+            point.y=pclPoint.y;
+            point.z=pclPoint.z;
+            todelete.push_back(point);
+          }
         }
         // publish the resultant points to the delete callback.
-        sensor_msgs::msg::PointCloud2 delete_msg=labeledToPcl2(todelete);
+        sensor_msgs::msg::PointCloud2 delete_msg;
+        pcl::toROSMsg(todelete,delete_msg);
         deletePub->publish(delete_msg);
 
       };

@@ -105,7 +105,6 @@ class Merger : public rclcpp::Node
           octomap::OcTree *tree=(octomap::OcTree*)octomap_msgs::binaryMsgToMap(octomapDictionary[submapIndex]);
           //since for now we are considering octo1 to be the base map, we will not transform the first map
           if (submapIndex!=1) tree=applyTf(tree, tfRefinedDictionary[submapIndex]);
-
           //merge it with the merged map
           for (octomap::OcTree::leaf_iterator it = tree->begin_leafs(),end = tree->end_leafs(); it != end; ++it)
           {
@@ -117,7 +116,7 @@ class Merger : public rclcpp::Node
               mergedWeights->setNodeValue(nodeKey, agentWeights[submapIndex]);   
             }
             else{
-              if (nodeIn1->getValue()==100 or nodeIn1->getValue()==-100 ) continue;
+              if (nodeIn1->getValue()>3.511 || nodeIn1->getValue()<-2.0 ) continue;
               octomap::OcTreeNode *weightNode = mergedWeights->search(nodeKey);
               float accWeight=weightNode->getLogOdds()+agentWeights[submapIndex];
               float val=(weightNode->getLogOdds()*nodeIn1->getLogOdds()+agentWeights[submapIndex]*it->getLogOdds())/
@@ -142,7 +141,7 @@ class Merger : public rclcpp::Node
         msg.id = "OcTree"; // Required to convert OcTreeStamped into regular OcTree
         RCLCPP_INFO(rclcpp::get_logger("merger_node"),"Publishing the edited map  \n");
         octomapDictionary[0]=msg;
-        mergedMapPub->publish(msg);        
+        mergedMapPub->publish(msg);  
       }
     }
 
@@ -165,23 +164,26 @@ class Merger : public rclcpp::Node
       [this](const typename std_msgs::msg::Bool::SharedPtr msg) -> void
       { //first check if it was aligned before
       if (msg->data){
-        
-
+      
         pcl::PointCloud<PointT>::Ptr addCloud(new pcl::PointCloud<PointT>);
         pcl::moveFromROSMsg(add_pcl,*addCloud);
-        pcl::PointCloud<PointT>::Ptr deleteCloud(new pcl::PointCloud<PointT>);
-        pcl::moveFromROSMsg(delete_pcl,*deleteCloud);
+
         std::lock_guard<std::mutex> lock(mtx_);
         for (std::size_t i = 0; i < addCloud->size(); ++i) {
           PointT point=addCloud->points[i];
           mergedTree->setNodeValue(point.x, point.y, point.z, 100);
         }
+      }
+      else{
+        pcl::PointCloud<PointT>::Ptr deleteCloud(new pcl::PointCloud<PointT>);
+        pcl::moveFromROSMsg(delete_pcl,*deleteCloud);
+        std::lock_guard<std::mutex> lock(mtx_);
         for (std::size_t i = 0; i < deleteCloud->size(); ++i) {
           PointT point=deleteCloud->points[i];
           mergedTree->setNodeValue(point.x, point.y, point.z, -100);
         }
-        
       }
+
       };
       editsSub=create_subscription<std_msgs::msg::Bool>(
       edits_topic, rclcpp::QoS(rclcpp::KeepLast(10)).reliable(), callback_edits);
@@ -347,7 +349,7 @@ class Communicator : public rclcpp::Node
       {
         std::lock_guard<std::mutex> lock(mtx_);
         delete_pcl = *msg;
-        std_msgs::msg::Bool trigger; trigger.data=true;
+        std_msgs::msg::Bool trigger; trigger.data=false;
         editPub->publish(trigger);
       };
       delete_sub=create_subscription<sensor_msgs::msg::PointCloud2>(
